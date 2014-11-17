@@ -39,7 +39,7 @@ module ::GithubBugs
 end
 
 after_initialize do
-  module ::GithubBadges
+  module ::GithubBugs
     class UpdateJob < ::Jobs::Scheduled
       every 1.day
 
