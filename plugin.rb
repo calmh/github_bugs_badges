@@ -13,16 +13,39 @@ module ::GithubBugs
 
     unless badge = Badge.find_by(name: 'Bug Reporter')
       badge = Badge.create!(name: 'Bug Reporter',
-       description: 'Created an issue on GitHub',
+       description: 'Created a bug issue on GitHub',
        badge_type_id: 3)
     end
 
-    uri = URI.parse("https://api.github.com/repos/#{SiteSetting.github_bugs_repo}/issues?filter=all&state=all&per_page=100")
+    uri = URI.parse("https://api.github.com/repos/#{SiteSetting.github_bugs_repo}/issues?labels=bug&state=all&per_page=100")
     response = Net::HTTP.get_response(uri)
     issues = JSON.parse(response.body)
 
     names = issues.group_by{|i| i['user']['url'].sub('https://api.github.com/users/', '')}.keys
 
+    names.each do |name|
+      user = User.find_by(username: name)
+
+      if user
+        BadgeGranter.grant(badge, user)
+        if user.title.blank?
+          user.title = badge.name
+          user.save
+        end
+      end
+    end
+
+    unless badge = Badge.find_by(name: 'Enhance!')
+      badge = Badge.create!(name: 'Enhance!',
+       description: 'Created an enhancement issue on GitHub',
+       badge_type_id: 3)
+    end
+
+    uri = URI.parse("https://api.github.com/repos/#{SiteSetting.github_bugs_repo}/issues?labels=enhancement&state=all&per_page=100")
+    response = Net::HTTP.get_response(uri)
+    issues = JSON.parse(response.body)
+
+    names = issues.group_by{|i| i['user']['url'].sub('https://api.github.com/users/', '')}.keys
 
     names.each do |name|
       user = User.find_by(username: name)
