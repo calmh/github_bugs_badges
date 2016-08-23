@@ -52,10 +52,6 @@ module ::GithubBugs
 
       if user
         BadgeGranter.grant(badge, user)
-        if user.title.blank?
-          user.title = badge.name
-          user.save
-        end
       end
     end
   end
